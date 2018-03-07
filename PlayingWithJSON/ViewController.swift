@@ -10,6 +10,8 @@ import UIKit
 
 class ViewController: UIViewController {
 
+    var imagesMetadata = [[String : String]]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         fetchJSON()
@@ -33,7 +35,7 @@ class ViewController: UIViewController {
             }
             do {
                 if let json = try JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String : Any] {
-                    print("json: \(json)")
+                    self.parseJSON(json: json)
                 }
             }
             catch let error {
@@ -41,6 +43,43 @@ class ViewController: UIViewController {
             }
         })
         task.resume()
+    }
+    
+    private func parseJSON(json : [String : Any]) {
+        var results = [[String : String]]()
+        guard let photosArr = json["photos"] as? [[String : Any]] else {
+            print("error parsing json")
+            return
+        }
+        
+        for dictionary in photosArr {
+            var image_url = ""
+            let base_url = "https://500px.com"
+
+            guard let image_url_arr = dictionary["image_url"] as? [String] else {
+                print("error parsing json")
+                return
+            }
+            
+            if image_url_arr.count > 0 {
+                image_url = image_url_arr[0]
+            }
+            
+            guard let path = dictionary["url"] as? String else {
+                print("error parsing json")
+                return
+            }
+
+            let url = base_url + path
+
+            if image_url.count > 0 && url.count > 0 {
+                var dict = [String : String]()
+                dict["image_url"] = image_url
+                dict["url"] = url
+                results.append(dict)
+            }
+        }
+        imagesMetadata = results
     }
 }
 
