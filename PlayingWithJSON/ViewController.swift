@@ -16,6 +16,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     let customCellIdentifier = "imageCollectionViewCell"
     var imagesMetadata = [[String : String]]()
 
+    
     // MARK: - Lifcycle
     
     override func viewDidLoad() {
@@ -25,6 +26,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         fetchJSON()
     }
 
+    
     // MARK: - UICollectionViewDataSource
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
