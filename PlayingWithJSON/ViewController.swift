@@ -8,15 +8,59 @@
 
 import UIKit
 
-class ViewController: UIViewController {
-
+class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+    
+    // MARK: - Properties
+    var collectionView: UICollectionView?
+    let layout:UICollectionViewFlowLayout = UICollectionViewFlowLayout()
+    let customCellIdentifier = "imageCollectionViewCell"
     var imagesMetadata = [[String : String]]()
+
+    // MARK: - Lifcycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.view.backgroundColor = .red
+        configureCollectionView()
         fetchJSON()
     }
 
+    // MARK: - UICollectionViewDataSource
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return imagesMetadata.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: customCellIdentifier, for: indexPath) as! ImageCollectionViewCell
+        cell.contentView.backgroundColor = .black
+        cell.clipsToBounds = true
+        cell.downloadImage(url: URL(string:imagesMetadata[indexPath.item]["image_url"]!)!)
+        return cell
+    }
+
+    
+    // MARK: - Private
+    
+    private func updateUI() {
+        collectionView!.reloadData()
+    }
+    
+    private func configureCollectionView() {
+        layout.sectionInset = UIEdgeInsets(top:0, left:0,bottom:0,right:0)
+        layout.minimumInteritemSpacing = 2
+        layout.minimumLineSpacing = 2
+        let sizeOfItem = (self.view.bounds.size.width - layout.minimumInteritemSpacing) * 0.5
+        layout.itemSize = CGSize.init(width: sizeOfItem, height: sizeOfItem)
+        
+        collectionView = UICollectionView(frame: self.view.bounds, collectionViewLayout: layout)
+        collectionView!.dataSource = self
+        collectionView!.delegate = self
+        collectionView!.backgroundColor = .white
+        collectionView!.register(ImageCollectionViewCell.classForCoder(), forCellWithReuseIdentifier: customCellIdentifier)
+        self.view.addSubview(collectionView!)
+    }
+    
     private func fetchJSON() {
         let url = URL(string:"https://api.500px.com/v1/photos?feature=fresh_today&sort=created_at&page=1&limit=10&image_size=4&include_store=store_download&include_states=voted&consumer_key=mSDECDmxoEEEw32OgaNxZxhUFuwiZetUaK9xTyTW")!
         let session = URLSession.shared
@@ -80,6 +124,9 @@ class ViewController: UIViewController {
             }
         }
         imagesMetadata = results
+        DispatchQueue.main.async {
+            self.updateUI()
+        }
     }
 }
 
